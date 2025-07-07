@@ -15,13 +15,12 @@ intents.members = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
 
-
 GAMBLER_MESSAGES = {
     1: "got a quick slap on the wrist - back in 1 minute!",
     5: "busted with a pair of deuces! 5 minute cool-off",
     10: "went all-in and crapped out! 10 minute penalty",
     15: "pushed their luck too far! 15 minute timeout",
-    20: "hit the MAXIMUM SECURITY LOCKOUT! 20 minutes in the cooler"
+    20: "hit the JACKPOT! MAXIMUM 20 minute timeout"
 }
 
 vote_sessions = {}
@@ -67,7 +66,7 @@ async def timeout_vote(interaction: discord.Interaction, player: discord.Member)
                    f"✅ - Send 'em to the cooler\n"
                    f"❌ - Let 'em ride\n\n"
                    f"1 vote (need 2 to convict)",
-        color=0xFFD700
+        color=0xFFD700  
     )
     message = await interaction.channel.send(embed=embed)
     vote_sessions[player.id].message = message
@@ -90,23 +89,30 @@ async def on_reaction_add(reaction, user):
                 session.add_vote(user.id)
                 
                 if session.count_votes() >= 2:
-                    
                     duration = random.choice([1, 5, 10, 15, 20])
                     message = GAMBLER_MESSAGES[duration]
                     
                     try:
                         await session.target.timeout(timedelta(minutes=duration), reason="Vote timeout")
                         
+                        if duration == 20:
+                            gif_file = "hu-hu-sheng-wei.gif"
+                            title = "🎰 JACKPOT! 🎰"
+                            color = 0xFFD700
+                        else:
+                            gif_file = "gambling-gamble.gif"
+                            title = "💥 BUSTED! 💥"
+                            color = 0xFF0000
                         
-                        with open("gambling-gamble.gif", "rb") as f:
-                            file = File(f, filename="busted.gif")
+                        with open(gif_file, "rb") as f:
+                            file = File(f, filename="timeout.gif")
                         
                         embed = discord.Embed(
-                            title="💥 BUSTED! 💥",
+                            title=title,
                             description=f"**{session.target.mention}** {message}",
-                            color=0xFF0000  
+                            color=color
                         )
-                        embed.set_image(url="attachment://busted.gif")
+                        embed.set_image(url="attachment://timeout.gif")
                         
                         await session.message.delete()
                         await session.message.channel.send(
@@ -118,7 +124,7 @@ async def on_reaction_add(reaction, user):
                         embed = discord.Embed(
                             title="🚨 HOUSE RULES",
                             description=f"The House protects {session.target.mention}!", 
-                            color=0x00FF00 
+                            color=0x00FF00  
                         )
                         await session.message.edit(embed=embed)
                     
