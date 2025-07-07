@@ -15,7 +15,7 @@ intents.members = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
 
-# Casino-style timeout messages
+
 GAMBLER_MESSAGES = {
     1: "got a quick slap on the wrist - back in 1 minute!",
     5: "busted with a pair of deuces! 5 minute cool-off",
@@ -67,7 +67,7 @@ async def timeout_vote(interaction: discord.Interaction, player: discord.Member)
                    f"✅ - Send 'em to the cooler\n"
                    f"❌ - Let 'em ride\n\n"
                    f"1 vote (need 2 to convict)",
-        color=0xFFD700  # Gold
+        color=0xFFD700
     )
     message = await interaction.channel.send(embed=embed)
     vote_sessions[player.id].message = message
@@ -90,21 +90,21 @@ async def on_reaction_add(reaction, user):
                 session.add_vote(user.id)
                 
                 if session.count_votes() >= 2:
-                    # Casino-style random timeout (1-20 mins)
+                    
                     duration = random.choice([1, 5, 10, 15, 20])
                     message = GAMBLER_MESSAGES[duration]
                     
                     try:
                         await session.target.timeout(timedelta(minutes=duration), reason="Vote timeout")
                         
-                        # Deal the GIF card
+                        
                         with open("gambling-gamble.gif", "rb") as f:
                             file = File(f, filename="busted.gif")
                         
                         embed = discord.Embed(
                             title="💥 BUSTED! 💥",
                             description=f"**{session.target.mention}** {message}",
-                            color=0xFF0000  # Red
+                            color=0xFF0000  
                         )
                         embed.set_image(url="attachment://busted.gif")
                         
@@ -118,7 +118,7 @@ async def on_reaction_add(reaction, user):
                         embed = discord.Embed(
                             title="🚨 HOUSE RULES",
                             description=f"The House protects {session.target.mention}!", 
-                            color=0x00FF00  # Green
+                            color=0x00FF00 
                         )
                         await session.message.edit(embed=embed)
                     
